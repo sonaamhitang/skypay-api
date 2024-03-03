@@ -136,7 +136,7 @@ class AuthApiController extends BaseApiController
     {
         // Validate incoming request
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|min:3|max:255',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
@@ -149,8 +149,7 @@ class AuthApiController extends BaseApiController
             ], 422);
         }
 
-        // Attempt to authenticate the user by username and password
-        if (!Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
+        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             // If authentication fails, return an error response
             return response()->json([
                 'status' => false,
@@ -163,7 +162,7 @@ class AuthApiController extends BaseApiController
         $user = Auth::user();
 
         // Issue token for the authenticated user
-        $token = $user->createToken('App')->accessToken;
+        $token = $user->createToken('App');
 
         // Return success response with token and user details
         return response()->json([
@@ -171,7 +170,11 @@ class AuthApiController extends BaseApiController
             'message' => 'User authenticated successfully.',
             'data' => [
                 'user' => new UserResource($user),
-                'token' => $token
+                'token' => [
+                    'type' => "Bearer",
+                    'access_token' => $token->accessToken,
+                    'expires_at' => $token->token->expires_at,
+                ]
             ]
         ], 200);
     }
