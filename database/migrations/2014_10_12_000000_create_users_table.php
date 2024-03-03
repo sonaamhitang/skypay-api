@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary(); // Use UUID for a globally unique identifier
+            $table->uuid('id')->unique()->primary(); // Use UUID for a globally unique identifier
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->unique()->nullable();
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('business_legal_type')->nullable();
             $table->string('business_legal_number')->nullable();
             $table->string('fcm_token')->nullable();
-            $table->string('status')->default('Active');
+            $table->string('status')->default('active');
 
             $table->string('subscription_plan')->default('Free');
             $table->timestamp('subscription_expiry')->nullable();

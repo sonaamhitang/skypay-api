@@ -16,6 +16,21 @@ class User extends Authenticatable implements HasMedia
 {
     use HasApiTokens, HasFactory, Notifiable, InteractsWithMedia;
 
+    protected $primaryKey = 'id';
+
+    // Indicate that the primary key is not auto-incrementing
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    // If you're using Laravel 7 or later, you can also indicate that your model should
+    // use UUIDs for routing binding. This is optional and useful if you're using
+    // route model binding with UUIDs.
+    public function getRouteKeyName()
+    {
+        return 'id';
+    }
+
     /**
      * The attributes that are mass assignable.
      *

@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Str;
 
 class AuthApiController extends BaseApiController
 {
@@ -88,10 +89,12 @@ class AuthApiController extends BaseApiController
     {
         // Validate incoming request
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|min:3|max:255',
             'email' => 'required|string|email|unique:users,email',
-            'username' => 'required|string|min:3|max:255|unique:users,username', // Ensure username is unique
             'password' => 'required|string|min:8',
+            'business_name' => 'required|string|min:3',
+            'business_type' => 'required|string|min:3',
+            'phone' => 'required|string|digits:10|unique:users,phone',
         ]);
 
         // If validation fails, return validation errors
@@ -104,16 +107,17 @@ class AuthApiController extends BaseApiController
         }
 
         // Create and save the new user
-        $user = new User([
-            'name' => $request->name,
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => bcrypt($request->password),
-        ]);
+        $user = new User($validator->validated());
+        $user->id = Str::uuid();
+        $user->password = bcrypt($request->password);
+        $user->api_key = Str::uuid();
+        $user->status = 'active';
+        $user->subscription_plan = 'free';
+        $user->subscription_expiry = now()->addYear();
         $user->save();
 
         // Issue token for the newly created user
-        $token = $user->createToken('App')->accessToken;
+        $token = $user->createToken('App');
 
         // Return success response with token
         return response()->json([
@@ -121,7 +125,11 @@ class AuthApiController extends BaseApiController
             'message' => "User registered successfully.",
             'data' => [
                 'user' => new UserResource($user),
-                'token' => $token
+                'token' => [
+                    'type' => "Bearer",
+                    'access_token' => $token->accessToken,
+                    'expires_at' => $token->token->expires_at,
+                ]
             ]
         ], 200);
     }
