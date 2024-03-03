@@ -194,12 +194,13 @@ class AuthApiController extends BaseApiController
         // Validate the input
         $validatedData = $request->validate([
             'name' => 'nullable|string|max:255',
-            'username' => 'nullable|string|max:255|unique:users,username,' . $user->id,
+            'phone' => 'nullable|string|digits:10|unique:users,phone,' . $user->id,
             'email' => 'nullable|string|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:255',
-            'bio' => 'nullable|string|max:1000',
+            'business_name' => 'nullable|string|min:3|max:255',
+            'business_type' => 'nullable|string|min:3|max:255',
+            'business_legal_type' => 'nullable|string|min:3|max:255',
+            'business_legal_number' => 'nullable|string|min:3|max:255',
             'fcm_token' => 'nullable|string',
-            'educational_level' => 'nullable|in:undergraduate,graduate,postgraduate,other',
             'image' => 'nullable|image|max:2048',
         ]);
 
