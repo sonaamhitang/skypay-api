@@ -47,38 +47,6 @@ class AuthApiController extends BaseApiController
             'message' => $emailAvailable ? "Email available" : "Email $email is unavailable",
         ], 200);
     }
-
-    /**
-     * Check if the provided username is available.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function checkUsernameAvailability(Request $request)
-    {
-        $username = $request->username;
-        try {
-            // Validate the input parameter
-            $request->validate([
-                'username' => 'required|string|min:3|max:255', // Adjust the validation rules as needed
-            ]);
-        } catch (ValidationException $e) {
-            // If validation fails, return validation errors
-            return response()->json([
-                'status' => false,
-                'message' => "Validation failed!",
-                'errors' => $e->errors()
-            ], 200);
-        }
-        // Check if username is available
-        $usernameAvailable = !User::where('username', $request->username)->exists();
-
-        return response()->json([
-            'status' => $usernameAvailable,
-            'message' => $usernameAvailable ? "Username available" : "Username $username is unavailable",
-        ], 200);
-    }
-
     /**
      * Register a new user.
      *
@@ -94,7 +62,7 @@ class AuthApiController extends BaseApiController
             'password' => 'required|string|min:8',
             'business_name' => 'required|string|min:3',
             'business_type' => 'required|string|min:3',
-            'phone' => 'required|string|digits:10|unique:users,phone',
+            'phone' => 'required|string|unique:users,phone',
         ]);
 
         // If validation fails, return validation errors
