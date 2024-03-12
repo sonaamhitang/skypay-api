@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\Core\ProviderController;
 use App\Http\Controllers\API\V1\Auth\AuthApiController;
+use App\Http\Controllers\API\V1\Core\UserPaymentProviderController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,7 +20,6 @@ use App\Http\Controllers\API\V1\Auth\AuthApiController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::apiResource('providers', ProviderController::class);
 
 Route::prefix('v1')->group(function () {
     Route::prefix('user')->group(function () {
@@ -28,6 +29,12 @@ Route::prefix('v1')->group(function () {
         Route::post('signin', [AuthApiController::class, 'signin']);
         Route::middleware('auth:api')->group(function () {
             Route::post('update-profile', [AuthApiController::class, 'updateProfile']);
+        });
+    });
+    Route::prefix('core')->group(function () {
+        Route::middleware('auth:api')->group(function () {
+            Route::apiResource('providers', ProviderController::class);
+            Route::apiResource('payment-providers', UserPaymentProviderController::class);
         });
     });
 });

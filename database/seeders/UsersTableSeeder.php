@@ -54,7 +54,7 @@ class UsersTableSeeder extends Seeder
         // Insert some users
         for ($i = 1; $i <= 10; $i++) {
             DB::table('users')->insert([
-                'id' => Str::uuid(),
+                'id' => "00" . $i,
                 'name' => 'User ' . $i,
                 'email' => 'user' . $i . '@test.test',
                 'phone' => '000' . $i . '000000',

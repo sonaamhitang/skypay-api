@@ -94,7 +94,7 @@ class AuthApiController extends BaseApiController
             'password' => 'required|string|min:8',
             'business_name' => 'required|string|min:3',
             'business_type' => 'required|string|min:3',
-            'phone' => 'required|string|digits:10|unique:users,phone',
+            'phone' => ['required', 'regex:/^\+\d{1,3}\s?\d{4}\s?\d{6}$/', 'unique:users,phone'],
         ]);
 
         // If validation fails, return validation errors
@@ -161,7 +161,7 @@ class AuthApiController extends BaseApiController
             // If authentication fails, return an error response
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized',
+                'message' => 'Invalid credentials, Please check and try again!',
                 'errors' => ['message' => 'Invalid credentials']
             ], 401);
         }

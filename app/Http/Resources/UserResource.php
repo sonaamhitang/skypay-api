@@ -22,7 +22,6 @@ class UserResource extends JsonResource
             'api_key' => $this->api_key,
             'email_verified_at' => $this->email_verified_at ? $this->email_verified_at->toDateTimeString() : null,
             'phone_verified_at' => $this->phone_verified_at ? $this->phone_verified_at->toDateTimeString() : null,
-            'phone_otp' => $this->phone_otp,
             'avatar_url' => $this->avatar_url,
             'last_login_at' => $this->last_login_at ? $this->last_login_at->toDateTimeString() : null,
             'last_login_ip' => $this->last_login_ip,
