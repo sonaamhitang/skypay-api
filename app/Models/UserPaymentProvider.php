@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\BaseModel;
 use App\Enums\PaymentProviderMode;
+use App\Models\User;
 
 class UserPaymentProvider extends BaseModel
 {
@@ -23,6 +24,11 @@ class UserPaymentProvider extends BaseModel
     function provider()
     {
         return $this->belongsTo(Provider::class);
+    }
+
+    function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     function isManualMode()

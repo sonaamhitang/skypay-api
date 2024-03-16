@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\Core\ProviderController;
 use App\Http\Controllers\API\V1\Auth\AuthApiController;
 use App\Http\Controllers\API\V1\Core\UserPaymentProviderController;
-
+use App\Http\Controllers\API\V1\Checkout\CheckoutController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -36,5 +36,14 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('providers', ProviderController::class);
             Route::apiResource('payment-providers', UserPaymentProviderController::class);
         });
+    });
+    Route::prefix('checkout')->group(function () {
+        // Route::middleware('auth:api')->group(function () {
+        Route::get('/providers/{id}', [CheckoutController::class, 'providers']);
+        Route::post('/initiate', [CheckoutController::class, 'initiate']);
+        Route::post('/set-payment-provider', [CheckoutController::class, 'setPaymentProvider']);
+        Route::get('/get-payment-details', [CheckoutController::class, 'getPaymentDetails']);
+        Route::patch('/payments/{id}', [CheckoutController::class, 'update']);
+        // });
     });
 });
