@@ -66,6 +66,7 @@ class CheckoutController extends BaseApiController
                 'user_id' => $paymentProvider->user_id,
                 'user_payment_provider_id' => $request->user_payment_provider_id,
                 'code' => $request->code,
+                'status' => 'Pending',
                 // Other fields...
                 'expires_at' => now()->addMinutes(10),
             ]);
@@ -77,6 +78,28 @@ class CheckoutController extends BaseApiController
             return $this->success(new CheckoutPaymentResource($payment), 'New payment initiated successfully.');
         }
     }
+
+    public function details(Request $request, $id)
+    {
+        $existingPayment = Payment::where('id', $id)
+            ->whereIn('status', ['Pending', 'Waiting'])
+            ->where(function ($query) {
+                $query->where('status', 'Waiting')
+                    ->orWhere(function ($query) {
+                        $query->where('status', 'Pending')
+                            ->where('expires_at', '>', now());
+                    });
+            })
+            ->first();
+
+        if ($existingPayment) {
+            // Return the existing payment if it's not expired
+            return $this->success(new CheckoutPaymentResource($existingPayment), 'Existing payment returned.');
+        } else {
+            return $this->error('Expired or Invalid Payment');
+        }
+    }
+
 
     public function update(Request $request, $paymentId)
     {

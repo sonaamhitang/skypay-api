@@ -42,7 +42,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/providers/{id}', [CheckoutController::class, 'providers']);
         Route::post('/initiate', [CheckoutController::class, 'initiate']);
         Route::post('/set-payment-provider', [CheckoutController::class, 'setPaymentProvider']);
-        Route::get('/get-payment-details', [CheckoutController::class, 'getPaymentDetails']);
+        Route::get('/payments/{id}', [CheckoutController::class, 'details']);
         Route::patch('/payments/{id}', [CheckoutController::class, 'update']);
         // });
     });
