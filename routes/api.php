@@ -6,6 +6,9 @@ use App\Http\Controllers\API\V1\Core\ProviderController;
 use App\Http\Controllers\API\V1\Auth\AuthApiController;
 use App\Http\Controllers\API\V1\Core\UserPaymentProviderController;
 use App\Http\Controllers\API\V1\Checkout\CheckoutController;
+use App\Http\Controllers\API\V1\Core\PaymentsController;
+use App\Http\Controllers\API\V1\Core\DashboardController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,21 +32,24 @@ Route::prefix('v1')->group(function () {
         Route::post('signin', [AuthApiController::class, 'signin']);
         Route::middleware('auth:api')->group(function () {
             Route::post('update-profile', [AuthApiController::class, 'updateProfile']);
+            Route::get('generate-api-key', [AuthApiController::class, 'generateApiKey']);
         });
     });
     Route::prefix('core')->group(function () {
         Route::middleware('auth:api')->group(function () {
             Route::apiResource('providers', ProviderController::class);
             Route::apiResource('payment-providers', UserPaymentProviderController::class);
+            Route::apiResource('payments', PaymentsController::class);
+            Route::get('dashboard', [DashboardController::class, 'index']);
         });
     });
     Route::prefix('checkout')->group(function () {
-        // Route::middleware('auth:api')->group(function () {
-        Route::get('/providers/{id}', [CheckoutController::class, 'providers']);
-        Route::post('/initiate', [CheckoutController::class, 'initiate']);
-        Route::post('/set-payment-provider', [CheckoutController::class, 'setPaymentProvider']);
-        Route::get('/payments/{id}', [CheckoutController::class, 'details']);
-        Route::patch('/payments/{id}', [CheckoutController::class, 'update']);
-        // });
+        Route::middleware('api-key.auth')->group(function () {
+            Route::get('/providers', [CheckoutController::class, 'providers']);
+            Route::post('/initiate', [CheckoutController::class, 'initiate']);
+            Route::post('/set-payment-provider', [CheckoutController::class, 'setPaymentProvider']);
+            Route::get('/payments/{id}', [CheckoutController::class, 'details']);
+            Route::patch('/payments/{id}', [CheckoutController::class, 'update']);
+        });
     });
 });

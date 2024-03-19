@@ -11,7 +11,10 @@ class Payment extends BaseModel
 
     protected $guarded = ['id'];
 
-    function paymentProvider()
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
+    function userPaymentProvider()
     {
         return $this->belongsTo(UserPaymentProvider::class, 'user_payment_provider_id')->with('provider');
     }

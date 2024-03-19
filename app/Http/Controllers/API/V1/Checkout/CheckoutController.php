@@ -17,9 +17,9 @@ use function Laravel\Prompts\error;
 class CheckoutController extends BaseApiController
 {
 
-    function providers(Request $request, $id)
+    function providers(Request $request)
     {
-        $user = User::findOrFail($id);
+        $user = auth()->user();
         $providers = UserPaymentProvider::where('user_id', $user->id)->latest()->get();
         return $this->success(CheckoutPaymentProviderResource::collection($providers));
     }
@@ -65,7 +65,10 @@ class CheckoutController extends BaseApiController
             $payment = new Payment([
                 'user_id' => $paymentProvider->user_id,
                 'user_payment_provider_id' => $request->user_payment_provider_id,
+                'amount' => $request->amount,
                 'code' => $request->code,
+                'failure_url' => $request->failure_url,
+                'success_url' => $request->success_url,
                 'status' => 'Pending',
                 // Other fields...
                 'expires_at' => now()->addMinutes(10),
@@ -73,7 +76,7 @@ class CheckoutController extends BaseApiController
 
             $payment->id = Str::uuid();
             $payment->save();
-            $payment->load('paymentProvider');
+            $payment->load('userPaymentProvider');
 
             return $this->success(new CheckoutPaymentResource($payment), 'New payment initiated successfully.');
         }
@@ -82,14 +85,14 @@ class CheckoutController extends BaseApiController
     public function details(Request $request, $id)
     {
         $existingPayment = Payment::where('id', $id)
-            ->whereIn('status', ['Pending', 'Waiting'])
-            ->where(function ($query) {
-                $query->where('status', 'Waiting')
-                    ->orWhere(function ($query) {
-                        $query->where('status', 'Pending')
-                            ->where('expires_at', '>', now());
-                    });
-            })
+            // ->whereIn('status', ['Pending', 'Waiting'])
+            // ->where(function ($query) {
+            //     $query->where('status', 'Waiting')
+            //         ->orWhere(function ($query) {
+            //             $query->where('status', 'Pending')
+            //                 ->where('expires_at', '>', now());
+            //         });
+            // })
             ->first();
 
         if ($existingPayment) {

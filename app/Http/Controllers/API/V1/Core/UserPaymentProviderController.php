@@ -69,11 +69,18 @@ class UserPaymentProviderController extends BaseApiController
 
             if ($request->mode === PaymentProviderMode::MANUAL) {
                 $data['manual_configuration'] = $request->manual_configuration;
-                // if ($request->avatar) {
-                //     $data['manual_configuration']['image_url'] = $request->avatar->store('images', 'public');
-                // } else {
-                //     $data['manual_configuration']['image_url'] = null;
-                // }
+
+                if ($request->hasFile('image')) {
+                    $file = $request->file('image');
+                    $customFileName = 'avatar' . '.' . $file->getClientOriginalExtension();
+
+                    $media = $user->addMediaFromRequest('image')
+                        ->usingFileName($customFileName)
+                        ->toMediaCollection('default');
+                    $data['manual_configuration']['image_url'] = $media->getUrl();
+                } else {
+                    $data['manual_configuration']['image_url'] = null;
+                }
             } else if ($request->mode === PaymentProviderMode::API) {
                 $data['api_configuration'] = $request->api_configuration;
             }
@@ -93,7 +100,7 @@ class UserPaymentProviderController extends BaseApiController
     {
         $user = auth()->user();
         $input = $request->all();
-        $userPaymentProvider  = UserPaymentProvider::whereUserId($user->id)->findOrFail($id);
+        $userPaymentProvider = UserPaymentProvider::whereUserId($user->id)->findOrFail($id);
         $rules = [
             'provider_id' => 'nullable',
             'mode' => 'nullable|in:Manual,API,Assisted',

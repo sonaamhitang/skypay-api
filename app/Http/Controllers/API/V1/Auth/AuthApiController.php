@@ -182,8 +182,7 @@ class AuthApiController extends BaseApiController
             $media = $user->addMediaFromRequest('image')
                 ->usingFileName($customFileName)
                 ->toMediaCollection('default');
-            $avatarUrl = $user->getFirstMediaUrl('default', 'thumb');
-            $user->avatar_url = $avatarUrl;
+            $user->avatar_url =$media->getUrl('thumb');
             $user->save();
         }
 
@@ -193,5 +192,32 @@ class AuthApiController extends BaseApiController
             'message' => "Profile updated successfully!",
             'data' => new UserResource($user)
         ], 200);
+    }
+
+    public function generateApiKey(Request $request)
+    {
+        $user = auth()->user();
+
+        $apiKey = $this->generateUniqueApiKey();
+        $user->update([
+            'api_key' => $apiKey
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => "Profile updated successfully!",
+            'data' => new UserResource($user)
+        ], 200);
+    }
+
+    protected function generateUniqueApiKey()
+    {
+        $apiKey = random_int(100000000, 999999999);
+
+        while (User::where('api_key', $apiKey)->exists()) {
+            $apiKey = random_int(100000000, 999999999);
+        }
+
+        return $apiKey;
     }
 }

@@ -17,19 +17,19 @@ class CheckoutPaymentResource extends JsonResource
     {
         $res =  [
             'id' => $this->id,
-            'user_provider_id' => $this->paymentProvider->id,
-            'provider_id' => $this->paymentProvider->provider->id,
-            'provider_name' => $this->paymentProvider->provider?->name,
-            'provider_logo_url' => $this->paymentProvider->provider?->logo_url,
+            'user_provider_id' => $this->userPaymentProvider->id,
+            'provider_id' => $this->userPaymentProvider->provider->id,
+            'provider_name' => $this->userPaymentProvider->provider?->name,
+            'provider_logo_url' => $this->userPaymentProvider->provider?->logo_url,
             'code' => $this->code,
-            'mode' => $this->paymentProvider->mode,
+            'mode' => $this->userPaymentProvider->mode,
             'created_at' => $this->created_at,
             'expires_at' => $this->expires_at,
             'status' => $this->status,
         ];
 
-        if ($this->paymentProvider->mode === PaymentProviderMode::MANUAL) {
-            $res['data'] = $this->paymentProvider->manual_configuration;
+        if ($this->userPaymentProvider->mode === PaymentProviderMode::MANUAL) {
+            $res['data'] = $this->userPaymentProvider->manual_configuration;
         }
         return $res;
     }
