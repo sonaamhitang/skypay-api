@@ -42,12 +42,12 @@ class UserPaymentProviderController extends BaseApiController
         ];
 
         if ($request->mode === 'Manual') {
-            $rules['manual_configuration.account_number'] = 'required|string';
-            $rules['manual_configuration.account_name'] = 'required|string';
-            $rules['manual_configuration.image'] = 'nullable|sometimes|image|max:1024';
+            $rules['manual_configuration_account_name'] = 'required|string';
+            $rules['manual_configuration_account_number'] = 'required|string';
+            $rules['manual_configuration_image'] = 'nullable|sometimes|image|max:1024';
         } elseif ($request->mode === 'API') {
-            $rules['api_configuration.secret'] = 'required|string';
-            $rules['api_configuration.environment'] = 'required|in:LIVE,UAT';
+            $rules['api_configuration_secret'] = 'required|string';
+            $rules['api_configuration_environment'] = 'required|in:LIVE,UAT';
         } elseif ($request->mode === 'Assisted') {
             // Define rules for Assisted mode here
         }
@@ -68,25 +68,36 @@ class UserPaymentProviderController extends BaseApiController
             ];
 
             if ($request->mode === PaymentProviderMode::MANUAL) {
-                $data['manual_configuration'] = $request->manual_configuration;
-
-                if ($request->hasFile('image')) {
-                    $file = $request->file('image');
-                    $customFileName = 'avatar' . '.' . $file->getClientOriginalExtension();
-
-                    $media = $user->addMediaFromRequest('image')
-                        ->usingFileName($customFileName)
-                        ->toMediaCollection('default');
-                    $data['manual_configuration']['image_url'] = $media->getUrl();
-                } else {
-                    $data['manual_configuration']['image_url'] = null;
-                }
+                $data['manual_configuration'] = [
+                    'account_number' => $request->input('manual_configuration_account_number'),
+                    'account_name' => $request->input('manual_configuration_account_name'),
+                ];
             } else if ($request->mode === PaymentProviderMode::API) {
-                $data['api_configuration'] = $request->api_configuration;
+                $data['api_configuration'] = [
+                    'environment' => $request->input('api_configuration_environment'),
+                    'secret' => $request->input('api_configuration_secret'),
+                ];
             }
             $userPaymentProvider = new UserPaymentProvider($data);
             $userPaymentProvider->id = Str::uuid();
             $userPaymentProvider->save();
+
+            if ($userPaymentProvider->mode === PaymentProviderMode::MANUAL) {
+                if ($request->hasFile('manual_configuration_image')) {
+                    $file = $request->file('manual_configuration_image');
+                    $customFileName = 'image' . '.' . $file->getClientOriginalExtension();
+
+                    $media = $userPaymentProvider->addMediaFromRequest('manual_configuration_image')
+                        ->usingFileName($customFileName)
+                        ->toMediaCollection('default');
+
+                    $mData = $userPaymentProvider->manual_configuration;
+                    $mData['image_url'] = $media->getUrl();
+                    $userPaymentProvider->manual_configuration = $mData;
+                    $userPaymentProvider->save();
+                }
+            }
+
             $userPaymentProvider->load('provider');
             return $this->success(new UserPaymentProviderResource($userPaymentProvider), 'Provider created successfully.');
         } catch (\Exception $e) {
@@ -106,12 +117,12 @@ class UserPaymentProviderController extends BaseApiController
             'mode' => 'nullable|in:Manual,API,Assisted',
         ];
         if ($request->mode === 'Manual') {
-            $rules['account_number'] = 'required|string';
-            $rules['account_name'] = 'required|string';
-            $rules['avatar'] = 'nullable|sometimes|image|max:1024';
+            $rules['manual_configuration_account_name'] = 'required|string';
+            $rules['manual_configuration_account_number'] = 'required|string';
+            $rules['manual_configuration_image'] = 'nullable|sometimes|image|max:1024';
         } elseif ($request->mode === 'API') {
-            $rules['api_secret'] = 'required|string';
-            $rules['environment'] = 'required|in:LIVE,UAT';
+            $rules['api_configuration_secret'] = 'required|string';
+            $rules['api_configuration_environment'] = 'required|in:LIVE,UAT';
         } elseif ($request->mode === 'Assisted') {
             // Define rules for Assisted mode here
         }
@@ -127,19 +138,34 @@ class UserPaymentProviderController extends BaseApiController
             $data = $request->all();
             if ($request->mode === PaymentProviderMode::MANUAL) {
                 $data['manual_configuration'] = [
-                    'account_name' => $request->account_name,
-                    'account_number' => $request->account_number,
+                    'account_number' => $request->input('manual_configuration_account_number'),
+                    'account_name' => $request->input('manual_configuration_account_name'),
                 ];
+
+                if ($request->hasFile('manual_configuration_image')) {
+
+                    $file = $request->file('manual_configuration_image');
+                    $customFileName = 'image' . '.' . $file->getClientOriginalExtension();
+
+                    $userPaymentProvider->clearMediaCollection('default');
+                    $media = $userPaymentProvider->addMediaFromRequest('manual_configuration_image')
+                        ->usingFileName($customFileName)
+                        ->toMediaCollection('default');
+                    $data['manual_configuration']['image_url'] = $media->getUrl();
+                } else {
+                    $data['manual_configuration']['image_url'] = null;
+                }
             } else if ($request->mode === PaymentProviderMode::API) {
                 $data['api_configuration'] = [
-                    'environment' => $request->environment,
-                    'secret' => $request->api_secret,
+                    'environment' => $request->input('api_configuration_environment'),
+                    'secret' => $request->input('api_configuration_secret'),
                 ];
             }
             $userPaymentProvider->update($data);
             return $this->success(new UserPaymentProviderResource($userPaymentProvider), 'Updated successfully.');
         } catch (\Exception $e) {
-            return $this->error('Something went wrong!');
+            return $e;
+            return $this->error('Something went wrong!', $e);
         }
     }
 

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('code');
             $table->uuid('user_id')->nullable();
             $table->uuid('user_payment_provider_id')->nullable();
+            $table->string('transaction_id')->nullable(); //e.g. Khalti, Esewa's transaction ID
 
             // $table->unique(['user_payment_provider_id', 'code']);
 
@@ -26,20 +27,22 @@ return new class extends Migration
 
             $table->longText('notes')->nullable();
 
-            $table->longText('data')->nullable();
+            $table->longText('process_data')->nullable();
+            $table->longText('payment_data')->nullable();
 
             $table->longText('other_info')->nullable();
             $table->longText('customer_info')->nullable();
             $table->longText('amount_info')->nullable();
 
-            $table->enum('status', ['Pending', 'Waiting', 'Paid', 'Cancelled', 'Invalid'])->default('Pending');
+            $table->enum('status', ['pending', 'waiting','refunded','ambiguous','cancelled','complete', 'unknown','invalid'])->default('pending');
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_payment_provider_id')->references('id')->on('user_payment_providers')->onDelete('cascade');
 
             $table->timestamp('expires_at');
-            $table->timestamp('marked_paid_at')->nullable(); //customer side
-            $table->timestamp('paid_at')->nullable();
+            $table->timestamp('marked_paid_at')->nullable(); //customer side -->waiting
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('refunded_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamp('invalid_at')->nullable();
             $table->timestamps();

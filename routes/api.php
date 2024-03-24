@@ -51,5 +51,6 @@ Route::prefix('v1')->group(function () {
             Route::get('/payments/{id}', [CheckoutController::class, 'details']);
             Route::patch('/payments/{id}', [CheckoutController::class, 'update']);
         });
+        Route::post('/verify', [CheckoutController::class, 'verify']);
     });
 });

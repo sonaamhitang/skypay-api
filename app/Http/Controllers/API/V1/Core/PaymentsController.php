@@ -61,22 +61,22 @@ class PaymentsController extends BaseApiController
             return $this->error('Unable to update invalid payment.');
         }
         
-        if($provider->status === 'Cancelled' || $provider->status === 'Paid') {
+        if($provider->status === 'cancelled' || $provider->status === 'paid') {
 
         }
         $validator = Validator::make($input, [
-            'status' => 'required|in:Cancelled,Invalid,Paid',
+            'status' => 'required|in:cancelled,invalid,complete',
         ]);
 
         if ($validator->fails()) {
             return $this->error('Validation Error.', $validator->errors());
         }
 
-        if ($provider->status === 'Paid') {
-            $input['paid_at'] = now();
-        } else if ($provider->status === 'Cancelled') {
+        if ($provider->status === 'completed') {
+            $input['completed_at'] = now();
+        } else if ($provider->status === 'cancelled') {
             $input['cancelled_at'] = now();
-        } else if ($provider->status === 'Invalid') {
+        } else if ($provider->status === 'invalid') {
             $input['invalid_at'] = now();
         }
         $provider->update($input);

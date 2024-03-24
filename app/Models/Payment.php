@@ -13,6 +13,8 @@ class Payment extends BaseModel
 
     protected $casts = [
         'expires_at' => 'datetime',
+        'process_data' => 'array',
+        'payment_data' => 'array',
     ];
     function userPaymentProvider()
     {

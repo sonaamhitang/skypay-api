@@ -2,26 +2,15 @@
 
 namespace App\Enums;
 
-class PaymentStatus
+enum PaymentStatus: string
 {
-    const PENDING = 'Pending';
-    const PAID = 'Paid';
-    const FAILED = 'Failed';
-    const WAITING = 'Waiting';
-    const INVALID = 'Invalid';
-
-    /**
-     * Get all enum values.
-     *
-     * @return array
-     */
-    public static function getValues(): array
-    {
-        return [
-            self::PENDING,
-            self::PAID,
-            self::INVALID,
-            self::FAILED,
-        ];
-    }
+    case PENDING = 'pending';
+    case COMPLETE = 'complete';
+    case REFUNDED = 'refunded';
+    case AMBIGUOUS = 'ambiguous';
+    case NOT_FOUND = 'not_found';
+    case CANCELLED = 'cancelled';
+    case SERVICE_UNAVAILABLE = 'service_unavailable';
+    case INVALID_RESPONSE = 'invalid_response';
+    case UNKNOWN = 'unknown';
 }
