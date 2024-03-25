@@ -20,6 +20,7 @@ class CheckoutPaymentResource extends JsonResource
             'user_provider_id' => $this->userPaymentProvider->id,
             'provider_id' => $this->userPaymentProvider->provider->id,
             'provider_name' => $this->userPaymentProvider->provider?->name,
+            'provider_code' => $this->userPaymentProvider->provider?->code,
             'provider_logo_url' => $this->userPaymentProvider->provider?->logo_url,
             'code' => $this->code,
             'mode' => $this->userPaymentProvider->mode,

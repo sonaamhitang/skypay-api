@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Http\Controllers\API\BaseApiController;
 use App\Models\UserPaymentProvider;
 use App\Repositories\EsewaRepo;
+use App\Repositories\KhaltiRepo;
 use Illuminate\Http\Request;
 use App\Http\Resources\CheckoutPaymentProviderResource;
 use App\Http\Resources\CheckoutPaymentResource;
@@ -83,12 +84,13 @@ class CheckoutController extends BaseApiController
             $payment->load('userPaymentProvider');
 
             if ($payment->userPaymentProvider->mode === PaymentProviderMode::API) {
-                $tid = rand(99999, 9999999);
-                $data = "total_amount=100,transaction_uuid=$tid,product_code=EPAYTEST";
-                $s = hash_hmac('sha256', $data, '8gBm/:&EnhH.1/q', true);
-                $signature = base64_encode($s);
-
                 if ($payment->userPaymentProvider->provider->code === "esewa") {
+                    $tid = rand(99999, 9999999);
+                    $data = "total_amount=100,transaction_uuid=$tid,product_code=EPAYTEST";
+                    $s = hash_hmac('sha256', $data, '8gBm/:&EnhH.1/q', true);
+                    $signature = base64_encode($s);
+
+
                     $payment->process_data = [
                         'url' => 'https://rc-epay.esewa.com.np/api/epay/main/v2/form',
                         'method' => "POST",
@@ -107,6 +109,17 @@ class CheckoutController extends BaseApiController
                         ],
                     ];
                     $payment->transaction_id = $tid;
+                    $payment->save();
+                } else if ($payment->userPaymentProvider->provider->code === "khalti") {
+                    $repo = new KhaltiRepo();
+                    $link = $repo->generateLink($payment);
+                    $payment->process_data = [
+                        'url' =>  $link,
+                        'method' => "GET",
+                        'fields' => [
+                        ],
+                    ];
+                    $payment->transaction_id = $payment->id;
                     $payment->save();
                 }
             }
@@ -187,8 +200,8 @@ class CheckoutController extends BaseApiController
             return $this->error('Validation failed', $validator->errors());
         }
         $payment = Payment::where('transaction_id', $request->transaction_id)
-        // ->whereIn('status', ['Pending'])
-        //     ->where('expires_at', '>', now())
+            // ->whereIn('status', ['Pending'])
+            //     ->where('expires_at', '>', now())
             ->first();
 
         if (!$payment) {
@@ -210,7 +223,7 @@ class CheckoutController extends BaseApiController
                 $payment->completed_at = now();
                 $payment->payment_data = $request->data;
                 $payment->save();
-            }else {
+            } else {
                 $payment->status = "cancelled";
                 $payment->cancelled_at = now();
                 $payment->save();

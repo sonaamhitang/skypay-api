@@ -6,7 +6,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use App\Enums\PaymentStatus;
 class EsewaRepo
 {
-
     private static $testUrl = 'https://uat.esewa.com.np/api/epay/transaction/status';
     private static $prodUrl = 'https://epay.esewa.com.np/api/epay/transaction/status';
     private static $client = null;
